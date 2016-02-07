@@ -41,7 +41,7 @@ def test_not_recreated(workspace_with_venv):
 
 def test_recreate(workspace_with_venv):
 	"""
-	Test whether --create does not recreate a venv.
+	Test whether --recreate does recreate a venv.
 	"""
 	
 	workspace_with_venv.create_file('venv/dummy')
@@ -50,3 +50,15 @@ def test_recreate(workspace_with_venv):
 		'venv --recreate --no-activate')
 	
 	workspace_with_venv.check_file('venv/dummy', exists = False)
+
+
+def test_create_non_default_name(workspace):
+	"""
+	Test whether a virtualenv is successfully created when a different path is specified.
+	"""
+	
+	workspace.run(
+		'venv --create --no-activate venv2')
+	
+	workspace.check_dir(['venv2'])
+	workspace.check_venv('venv2')
