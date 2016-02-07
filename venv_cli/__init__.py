@@ -62,7 +62,8 @@ def backed_up_dir(path):
 	try:
 		yield
 	except:
-		os.rename(path, delete_path)
+		if os.path.exists(path):
+			os.rename(path, delete_path)
 		
 		if os.path.exists(backup_path):
 			os.rename(backup_path, path)
