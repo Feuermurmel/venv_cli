@@ -150,10 +150,6 @@ class Virtualenv:
 		return os.path.exists(self.path)
 	
 	@property
-	def path_is_dir(self):
-		return os.path.isdir(self.path)
-	
-	@property
 	def is_virtualenv(self):
 		return all(os.path.isfile(os.path.join(self.path, 'bin', i)) for i in ['activate', 'python'])
 
@@ -202,41 +198,37 @@ def parse_args():
 	return args
 
 
-def handle_non_virtualenv(virtualenv):
-	"""
-	Generate and throw an appropriate message for an invalid virtualenv and raise it as UserError.
-	"""
-	
-	if virtualenv.path_is_dir:
-		message = 'is not a virtualenv'
-	elif virtualenv.path_exists:
-		message = 'is not a directory'
-	else:
-		message = 'does not exist'
-	
-	raise UserError('{} {}.', virtualenv.path, message)
-
-
 def main(create : bool, recreate : bool, setup : bool, activate : bool, python : str, virtualenv : Virtualenv, test : bool):
 	if test:
 		if virtualenv.is_virtualenv:
 			log('{} is a virtualenv running {}.', virtualenv.path, virtualenv.python_version_string)
+		elif virtualenv.path_exists:
+			raise UserError('{} is not a virtualenv.', virtualenv.path)
 		else:
-			handle_non_virtualenv(virtualenv)
+			raise UserError('{} does not exist.', virtualenv.path)
 	else:
-		parent_dir_name = os.path.basename(os.path.dirname(os.path.abspath(virtualenv.path)))
-		prompt = '({}) '.format(parent_dir_name)
+		parent_dir = os.path.dirname(os.path.abspath(virtualenv.path))
+		prompt = '({}) '.format(os.path.basename(parent_dir))
+		
+		if not os.path.exists(parent_dir):
+			raise UserError('Parent {} does not exist.', os.path.dirname(virtualenv.path))
+		elif not os.path.isdir(parent_dir):
+			raise UserError('Parent {} is not a directory.', os.path.dirname(virtualenv.path))
 		
 		if create:
 			if not virtualenv.is_virtualenv or recreate:
 				if virtualenv.path_exists and not virtualenv.is_virtualenv:
-					raise UserError('{} exists but is not a virtualenv.', virtualenv.path)
+					raise UserError('{} is not a virtualenv.', virtualenv.path)
 				
 				virtualenv.create(python, prompt, setup)
 		
 		if activate:
-			if not virtualenv.is_virtualenv:
-				handle_non_virtualenv(virtualenv)
+			if not virtualenv.path_exists:
+				raise UserError('{} does not exist.', virtualenv.path)
+			elif not virtualenv.is_virtualenv:
+				raise UserError('{} is not a virtualenv.', virtualenv.path)
+			
+			log('Activating virtualenv {} running {}.', virtualenv.path, virtualenv.python_version_string)
 			
 			virtualenv.activate()
 
