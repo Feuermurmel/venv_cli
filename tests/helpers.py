@@ -36,10 +36,10 @@ class Workspace:
 		assert expect_stdout_contains in out.decode()
 		assert expect_stderr_contains in err.decode()
 	
-	def check_venv(self, *, exists = True):
+	def check_venv(self, path = 'venv', *, exists = True):
 		if exists:
 			self.run(
-				'. venv/bin/activate',
+				'. {}/bin/activate'.format(path),
 				'[ "$VIRTUAL_ENV" ]')
 		else:
 			self.run(
