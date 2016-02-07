@@ -49,6 +49,9 @@ class Workspace:
 		with open(os.path.join(self.dir, path), 'w', encoding = 'utf-8') as file:
 			file.write(content)
 	
+	def create_dir(self, path):
+		os.makedirs(os.path.join(self.dir, path), exist_ok = True)
+	
 	def check_file(self, path, content = None, *, exists = True):
 		file_path = os.path.join(self.dir, path)
 		
@@ -63,6 +66,29 @@ class Workspace:
 				raise ValueError('content must be None if exists is set to False.')
 			
 			assert not os.path.exists(file_path)
+	
+	def check_dir(self, dirs = [], files = [], *, path = '.', exclude_hidden = True):
+		"""
+		Check that a set of directories exists and that only those directories exist.
+		"""
+		
+		found_dirs = set()
+		found_files = set()
+		
+		for i in os.listdir(os.path.join(self.dir, path)):
+			if not (i.startswith('.') and exclude_hidden):
+				item_path = os.path.join(self.dir, path, i)
+				
+				if os.path.isdir(item_path):
+					found_dirs.add(i)
+				elif os.path.isfile(item_path):
+					found_files.add(i)
+		
+		if dirs is not None:
+			assert found_dirs == set(dirs)
+		
+		if files is not None:
+			assert found_files == set(files)
 
 
 @pytest.fixture()
@@ -120,3 +146,28 @@ def test_check_file_not_existing(workspace):
 	
 	with pytest.raises(AssertionError):
 		workspace.check_file('test', 'bar')
+
+
+def test_check_dir(workspace):
+	os.mkdir(os.path.join(workspace.dir, 'foo'))
+	
+	with open(os.path.join(workspace.dir, 'bar'), 'w'):
+		pass
+	
+	workspace.check_dir(['foo'], ['bar'])
+	
+	with pytest.raises(AssertionError):
+		workspace.check_dir()
+
+
+def test_check_dir_subdir(workspace):
+	os.makedirs(os.path.join(workspace.dir, 'foo/bar'))
+	
+	workspace.check_dir(['bar'], path = 'foo')
+
+
+def test_check_dir_none(workspace):
+	workspace.check_dir()
+	
+	with pytest.raises(AssertionError):
+		workspace.check_dir('foo')
