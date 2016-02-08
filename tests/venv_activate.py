@@ -1,12 +1,11 @@
 from ._helpers import *
 
-# def test_create_activate(command_context):
-# 	command_context.run(
-# 		'venv',
-# 		'')
-# 	
-# 	command_context.bash(['. venv/bin/activate'])
 
+def test_activate(workspace_with_venv):
+	workspace_with_venv.run(
+		'venv',
+		'python -c "print(123)"',
+		expect_stdout_contains = '123')
 
 
 def test_fail_without_create(workspace):
