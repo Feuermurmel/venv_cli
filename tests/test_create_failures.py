@@ -81,7 +81,7 @@ def test_recreate_failure():
 	Test whether failure to recreate a virtualenv does not leave a trace.
 	"""
 	
-	with workspace_with_venv() as ws:
+	with workspace(virtualenvs = ['venv']) as ws:
 		ws.create_file('venv/dummy')
 		
 		ws.run('venv --python no-such-python', expect_error = True)

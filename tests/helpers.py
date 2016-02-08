@@ -92,14 +92,11 @@ class Workspace:
 
 
 @contextlib.contextmanager
-def workspace():
+def workspace(*, virtualenvs = []):
 	with tempfile.TemporaryDirectory() as temp_dir:
-		yield Workspace(temp_dir)
-
-
-@contextlib.contextmanager
-def workspace_with_venv():
-	with workspace() as ws:
-		ws.run('venv --no-activate')
+		ws = Workspace(temp_dir)
+		
+		for i in virtualenvs:
+			ws.run('venv --no-activate {}'.format(i))
 		
 		yield ws

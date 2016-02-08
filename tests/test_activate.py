@@ -2,7 +2,7 @@ from .helpers import *
 
 
 def test_activate():
-	with workspace_with_venv() as ws:
+	with workspace(virtualenvs = ['venv']) as ws:
 		ws.run(
 			'venv',
 			'python -c "print(123)"',

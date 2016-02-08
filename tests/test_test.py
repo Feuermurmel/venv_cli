@@ -32,7 +32,7 @@ def test_test_venv():
 	Test with an empty directory.
 	"""
 	
-	with workspace_with_venv() as ws:
+	with workspace(virtualenvs = ['venv']) as ws:
 		ws.run(
 			'venv --test',
 			expect_stderr_contains = 'is a virtualenv running')
@@ -43,9 +43,7 @@ def test_test_venv_different_name():
 	Test with an empty directory.
 	"""
 	
-	with workspace() as ws:
-		ws.run('venv --no-activate venv2')
-		
+	with workspace(virtualenvs = ['venv2']) as ws:
 		ws.run(
 			'venv --test venv2',
 			expect_stderr_contains = 'is a virtualenv running')

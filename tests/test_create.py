@@ -30,7 +30,7 @@ def test_not_recreated():
 	Test whether --create does not recreate a venv.
 	"""
 	
-	with workspace_with_venv() as ws:
+	with workspace(virtualenvs = ['venv']) as ws:
 		ws.create_file('venv/dummy')
 		
 		ws.run(
@@ -44,7 +44,7 @@ def test_recreate():
 	Test whether --recreate does recreate a venv.
 	"""
 	
-	with workspace_with_venv() as ws:
+	with workspace(virtualenvs = ['venv']) as ws:
 		ws.create_file('venv/dummy')
 		
 		ws.run(

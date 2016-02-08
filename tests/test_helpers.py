@@ -10,7 +10,7 @@ def test_workspace_check_venv_not_existing():
 
 
 def test_workspace_check_venv_existing():
-	with workspace_with_venv() as ws:
+	with workspace(virtualenvs = ['venv']) as ws:
 		ws.check_venv()
 		
 		with pytest.raises(AssertionError):
