@@ -1,4 +1,4 @@
-import os, subprocess, sys, pytest
+import os, subprocess, sys, contextlib, pytest, tempfile
 
 
 class Workspace:
@@ -91,15 +91,15 @@ class Workspace:
 			assert found_files == set(files)
 
 
-@pytest.fixture()
-def workspace(tmpdir_factory):
-	temp_dir = tmpdir_factory.mktemp('cwd')
-	
-	return Workspace(str(temp_dir))
+@contextlib.contextmanager
+def workspace():
+	with tempfile.TemporaryDirectory() as temp_dir:
+		yield Workspace(temp_dir)
 
 
-@pytest.fixture()
-def workspace_with_venv(workspace):
-	workspace.run('venv --no-activate')
-	
-	return workspace
+@contextlib.contextmanager
+def workspace_with_venv():
+	with workspace() as ws:
+		ws.run('venv --no-activate')
+		
+		yield ws
