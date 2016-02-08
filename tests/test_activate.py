@@ -1,4 +1,4 @@
-from ._helpers import *
+from .helpers import *
 
 
 def test_activate(workspace_with_venv):
