@@ -17,12 +17,16 @@ class Workspace:
 		self.dir = dir
 		
 	def _run_commands(self, lines):
+		environ = dict(os.environ)
+		environ['HOME'] = os.path.abspath(os.path.join(self.dir, 'home'))
+		
 		process = subprocess.Popen(
 			['bash', '--norc'],
 			cwd = self.dir,
 			stdin = subprocess.PIPE,
 			stdout = subprocess.PIPE,
-			stderr = subprocess.PIPE)
+			stderr = subprocess.PIPE,
+			env = environ)
 		
 		input = ''.join(i + '\n' for i in ('set -e',) + lines).encode()
 		out, err = process.communicate(input)
@@ -109,6 +113,7 @@ class Workspace:
 def workspace(*, virtualenvs = []):
 	with tempfile.TemporaryDirectory() as temp_dir:
 		ws = Workspace(temp_dir)
+		ws.create_dir('home')
 		
 		for i in virtualenvs:
 			ws.run('venv --no-activate {}'.format(i))
