@@ -1,6 +1,13 @@
 import os, subprocess, sys, contextlib, pytest, tempfile
 
 
+class RunResult:
+	def __init__(self, returncode : int, stdout : str, stderr : str):
+		self.returncode = returncode
+		self.stdout = stdout
+		self.stderr = stderr
+
+
 class Workspace:
 	"""
 	Allows executing commands and checking conditions in a temporary directory.
@@ -9,11 +16,7 @@ class Workspace:
 	def __init__(self, dir):
 		self.dir = dir
 		
-	def run(self, *lines, expect_error = False, expect_stdout_contains = '', expect_stderr_contains = ''):
-		"""
-		Runs the specified commands by piping them into a non-interactive bash process.
-		"""
-		
+	def _run_commands(self, lines):
 		process = subprocess.Popen(
 			['bash', '--norc'],
 			cwd = self.dir,
@@ -22,19 +25,30 @@ class Workspace:
 			stderr = subprocess.PIPE)
 		
 		input = ''.join(i + '\n' for i in ('set -e',) + lines).encode()
-		
 		out, err = process.communicate(input)
 		
 		sys.stdout.buffer.write(out)
 		sys.stderr.buffer.write(err)
 		
-		if expect_error:
-			assert process.returncode
-		else:
-			assert not process.returncode
+		# We expect all output to be valid UTF-8, mainly because all output should be ASCII.
+		return RunResult(process.returncode, out.decode(), err.decode())
+	
+	def run(self, *lines, expect_error = False, expect_stdout_contains = '', expect_stderr_contains = ''):
+		"""
+		Runs the specified commands by piping them into a non-interactive bash process.
+		"""
 		
-		assert expect_stdout_contains in out.decode()
-		assert expect_stderr_contains in err.decode()
+		result = self._run_commands(lines)
+		
+		if expect_error:
+			assert result.returncode
+		else:
+			assert not result.returncode
+		
+		assert expect_stdout_contains in result.stdout
+		assert expect_stderr_contains in result.stderr
+		
+		return result
 	
 	def check_venv(self, path = 'venv', *, exists = True):
 		if exists:
