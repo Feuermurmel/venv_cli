@@ -64,3 +64,20 @@ def test_create_non_default_name():
 		
 		ws.check_dir(['venv2'])
 		ws.check_venv('venv2')
+
+
+def test_usability():
+	"""
+	Check that installing a project into the virtualenv succeeds. There are many reasons why this could fail so it is a good indicator for subtle things that can go wrong.
+	"""
+	
+	with workspace(virtualenvs = ['venv'], dummy_project = True) as ws:
+		ws.run(
+			'venv',
+			'python setup.py install')
+		
+		# For good measure.
+		ws.run(
+			'venv',
+			'python setup.py develop')
+	
