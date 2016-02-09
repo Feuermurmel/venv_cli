@@ -20,3 +20,14 @@ def test_fail_without_create():
 			expect_error = True)
 		
 		ws.check_venv(exists = False)
+
+
+def test_pyenv_launcher_not_exported():
+	"""
+	Check that the dreaded __PYVENV_LAUNCHER__ environment variable is not exported into the shell session when activating the virtualenv.
+	"""
+	
+	with workspace(virtualenvs = ['venv']) as ws:
+		ws.run(
+			'venv',
+			'! [ "$__PYVENV_LAUNCHER__" ]')
