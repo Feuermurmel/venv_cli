@@ -26,7 +26,7 @@ def bash_escape_string(string):
 
 def command(*args, use_stdout = False):
 	stdout = subprocess.PIPE if use_stdout else None
-	process = subprocess.Popen(args, stdout = stdout)
+	process = subprocess.Popen(args, stdout = stdout, close_fds = False)
 	
 	out, _ = process.communicate()
 	
