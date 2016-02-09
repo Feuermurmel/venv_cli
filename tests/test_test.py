@@ -33,9 +33,14 @@ def test_test_venv():
 	"""
 	
 	with workspace(virtualenvs = ['venv']) as ws:
-		ws.run(
-			'venv --test',
-			expect_stderr_contains = 'is a virtualenv running')
+		blurb = 'is a virtualenv running'
+		
+		res = ws.run('venv --test')
+		
+		assert blurb in res.stderr
+		
+		# Check that we didn't get an empty version string. This is brittle and should probably be replaced by something more robust.
+		assert blurb + ' .' not in res.stderr
 
 
 def test_test_venv_different_name():
