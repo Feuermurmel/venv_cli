@@ -1,4 +1,4 @@
-import os, subprocess, sys, contextlib, pytest, tempfile
+import os, subprocess, sys, contextlib, pkgutil, tempfile, pytest
 
 
 class RunResult:
@@ -110,10 +110,16 @@ class Workspace:
 
 
 @contextlib.contextmanager
-def workspace(*, virtualenvs = []):
+def workspace(*, virtualenvs = [], dummy_project = False):
 	with tempfile.TemporaryDirectory() as temp_dir:
 		ws = Workspace(temp_dir)
 		ws.create_dir('home')
+		
+		if dummy_project:
+			for i in 'setup.py', 'venv_cli_dummy.py':
+				data = pkgutil.get_data(__name__, os.path.join('example_project', i)).decode()
+				
+				ws.create_file(i, data)
 		
 		for i in virtualenvs:
 			ws.run('venv --no-activate {}'.format(i))
