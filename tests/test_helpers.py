@@ -21,7 +21,7 @@ def test_check_write():
 	with workspace() as ws:
 		ws.create_file('test', 'foo')
 		
-		with open(os.path.join(ws.dir, 'test'), 'rb') as file:
+		with open(os.path.join(ws.cwd, 'test'), 'rb') as file:
 			assert file.read() == b'foo'
 
 
@@ -51,9 +51,9 @@ def test_check_file_not_existing():
 
 def test_check_dir():
 	with workspace() as ws:
-		os.mkdir(os.path.join(ws.dir, 'foo'))
+		os.mkdir(os.path.join(ws.cwd, 'foo'))
 		
-		with open(os.path.join(ws.dir, 'bar'), 'w'):
+		with open(os.path.join(ws.cwd, 'bar'), 'w'):
 			pass
 		
 		ws.check_dir(['foo'], ['bar'])
@@ -64,7 +64,7 @@ def test_check_dir():
 
 def test_check_dir_subdir():
 	with workspace() as ws:
-		os.makedirs(os.path.join(ws.dir, 'foo/bar'))
+		os.makedirs(os.path.join(ws.cwd, 'foo/bar'))
 		
 		ws.check_dir(['bar'], path = 'foo')
 

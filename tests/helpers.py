@@ -14,15 +14,19 @@ class Workspace:
 	"""
 	
 	def __init__(self, dir):
-		self.dir = dir
+		self.cwd = os.path.join(dir, 'cwd')
+		self.home = os.path.join(dir, 'home')
 		
+		os.mkdir(self.cwd)
+		os.mkdir(self.home)
+	
 	def _run_commands(self, lines):
 		environ = dict(os.environ)
-		environ['HOME'] = os.path.abspath(os.path.join(self.dir, 'home'))
+		environ['HOME'] = os.path.abspath(self.home)
 		
 		process = subprocess.Popen(
-			['bash', '--norc'],
-			cwd = self.dir,
+			['bash'],
+			cwd = self.cwd,
 			stdin = subprocess.PIPE,
 			stdout = subprocess.PIPE,
 			stderr = subprocess.PIPE,
@@ -64,14 +68,14 @@ class Workspace:
 				'! [ -e venv ]')
 	
 	def create_file(self, path, content : str = ''):
-		with open(os.path.join(self.dir, path), 'w', encoding = 'utf-8') as file:
+		with open(os.path.join(self.cwd, path), 'w', encoding = 'utf-8') as file:
 			file.write(content)
 	
 	def create_dir(self, path):
-		os.makedirs(os.path.join(self.dir, path), exist_ok = True)
+		os.makedirs(os.path.join(self.cwd, path), exist_ok = True)
 	
 	def check_file(self, path, content = None, *, exists = True):
-		file_path = os.path.join(self.dir, path)
+		file_path = os.path.join(self.cwd, path)
 		
 		if exists:
 			assert os.path.isfile(file_path)
@@ -93,9 +97,9 @@ class Workspace:
 		found_dirs = set()
 		found_files = set()
 		
-		for i in os.listdir(os.path.join(self.dir, path)):
+		for i in os.listdir(os.path.join(self.cwd, path)):
 			if not (i.startswith('.') and exclude_hidden):
-				item_path = os.path.join(self.dir, path, i)
+				item_path = os.path.join(self.cwd, path, i)
 				
 				if os.path.isdir(item_path):
 					found_dirs.add(i)
@@ -113,7 +117,6 @@ class Workspace:
 def workspace(*, virtualenvs = [], dummy_project = False):
 	with tempfile.TemporaryDirectory() as temp_dir:
 		ws = Workspace(temp_dir)
-		ws.create_dir('home')
 		
 		if dummy_project:
 			for i in 'setup.py', 'venv_cli_dummy.py':
