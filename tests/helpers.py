@@ -32,7 +32,7 @@ class Workspace:
 			stderr = subprocess.PIPE,
 			env = environ)
 		
-		input = ''.join(i + '\n' for i in ('set -e',) + lines).encode()
+		input = ''.join(i + '\n' for i in lines).encode()
 		out, err = process.communicate(input)
 		
 		sys.stdout.buffer.write(out)
@@ -46,7 +46,17 @@ class Workspace:
 		Runs the specified commands by piping them into a non-interactive bash process.
 		"""
 		
-		result = self._run_commands(lines)
+		def iter_lines():
+			yield 'set -e'
+			
+			for i in lines:
+				yield i
+				
+				# Enable errexit whenever a new shell session might have been started.
+				if i.split()[0] == 'venv':
+					yield 'set -e'
+		
+		result = self._run_commands(list(iter_lines()))
 		
 		if expect_error:
 			assert result.returncode
