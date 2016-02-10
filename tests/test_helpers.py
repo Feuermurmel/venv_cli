@@ -1,7 +1,54 @@
 from .helpers import *
 
 
-def test_workspace_check_venv_not_existing():
+def test_run():
+	"""
+	Test running commands.
+	"""
+	
+	with workspace() as ws:
+		ws.run('true')
+		ws.run('false', expect_error = True)
+
+
+def test_run_failure():
+	"""
+	Test running commands that fail or succeed unexpectedly.
+	"""
+	
+	with workspace() as ws:
+		with pytest.raises(AssertionError):
+			ws.run('false')
+		
+		with pytest.raises(AssertionError):
+			ws.run('true', expect_error = True)
+
+
+def test_run_failure_camouflaged():
+	"""
+	Test running commands a sequence of commands where some fail but the last succeeds.
+	"""
+	
+	with workspace() as ws:
+		with pytest.raises(AssertionError):
+			ws.run(
+				'false',
+				'true')
+
+
+def test_run_failure_in_venv():
+	"""
+	Test running commands that fail in a virtualenv.
+	"""
+	
+	with workspace(virtualenvs = ['venv']) as ws:
+		with pytest.raises(AssertionError):
+			ws.run(
+				'venv',
+				'false')
+
+
+def test_check_venv_not_existing():
 	with workspace() as ws:
 		ws.check_venv(exists = False)
 		
@@ -9,7 +56,7 @@ def test_workspace_check_venv_not_existing():
 			ws.check_venv()
 
 
-def test_workspace_check_venv_existing():
+def test_check_venv_existing():
 	with workspace(virtualenvs = ['venv']) as ws:
 		ws.check_venv()
 		
