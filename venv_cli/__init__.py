@@ -105,10 +105,14 @@ def exec_shell(rc_lines : list):
 	"""
 	
 	bash_executable = shutil.which(_shell)
+	env = dict(os.environ)
+	
+	if '__PYVENV_LAUNCHER__' in env:
+		del env['__PYVENV_LAUNCHER__']
 	
 	with temporary_script(rc_lines) as name:
 		# TODO: We assume that the only open file descriptors at this time are stdin, stderr, stdout and the rcfile.
-		os.execvp(bash_executable, [_shell, '--rcfile', name, '-i'])
+		os.execvpe(bash_executable, [_shell, '--rcfile', name, '-i'], env)
 
 
 class Virtualenv:
@@ -138,7 +142,7 @@ class Virtualenv:
 	@property
 	def python_version_string(self):
 		"""
-		Given the path to a virtualenv return the Python version string for the install interpreter. This is what `python --version` returns.
+		Given the path to a virtualenv return the Python version string for the installed interpreter. This is what `python --version` returns.
 		"""
 		
 		stdout = command(os.path.join(self.path, 'bin', 'python'), '--version', use_stdout = True)
