@@ -24,16 +24,25 @@ def bash_escape_string(string):
 	return "'{}'".format("'\\''".join(string.split("'")))
 
 
-def command(*args, use_stdout = False):
-	stdout = subprocess.PIPE if use_stdout else None
-	process = subprocess.Popen(args, stdout = stdout, close_fds = False)
+class CommandResult:
+	def __init__(self, stdout, stderr):
+		self.stdout = stdout
+		self.stderr = stderr
+
+
+def command(*args, use_stdout = False, use_stderr = False):
+	process = subprocess.Popen(
+		args,
+		stdout = subprocess.PIPE if use_stdout else None,
+		stderr = subprocess.PIPE if use_stderr else None,
+		close_fds = False)
 	
-	out, _ = process.communicate()
+	stdout, stderr = process.communicate()
 	
 	if process.returncode:
 		raise Exception('Error running command: {}'.format(' '.join(args)))
 	
-	return out
+	return CommandResult(stdout, stderr)
 
 
 def rm_temp(path):
@@ -145,7 +154,7 @@ class Virtualenv:
 		Given the path to a virtualenv return the Python version string for the installed interpreter. This is what `python --version` returns.
 		"""
 		
-		stdout = command(os.path.join(self.path, 'bin', 'python'), '--version', use_stdout = True)
+		stdout = command(os.path.join(self.path, 'bin', 'python'), '--version', use_stdout = True, use_stderr = True).stdout
 		
 		return stdout.decode().strip()
 	
