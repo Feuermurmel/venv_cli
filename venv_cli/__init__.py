@@ -154,9 +154,14 @@ class Virtualenv:
 		Given the path to a virtualenv return the Python version string for the installed interpreter. This is what `python --version` returns.
 		"""
 		
-		stdout = command(os.path.join(self.path, 'bin', 'python'), '--version', use_stdout = True, use_stderr = True).stdout
+		result = command(os.path.join(self.path, 'bin', 'python'), '--version', use_stdout = True, use_stderr = True)
 		
-		return stdout.decode().strip()
+		assert bool(result.stdout) != bool(result.stderr)
+		
+		if result.stdout:
+			return result.stdout.decode().strip()
+		else:
+			return result.stderr.decode().strip()
 	
 	@property
 	def path_exists(self):
